@@ -3,36 +3,18 @@
 session_start();
 error_reporting(0);
 include('includes/config.php');
-if(isset($_POST['signin']))
-{
-$uname=$_POST['username'];
-$password=md5($_POST['password']);
-$sql ="SELECT EmailId,Password,Status,id FROM tblemployees WHERE EmailId=:uname and Password=:password";
-$query= $dbh -> prepare($sql);
-$query-> bindParam(':uname', $uname, PDO::PARAM_STR);
-$query-> bindParam(':password', $password, PDO::PARAM_STR);
-$query-> execute();
-$results=$query->fetchAll(PDO::FETCH_OBJ);
-if($query->rowCount() > 0)
-{
- foreach ($results as $result) {
-    $status=$result->Status;
-    $_SESSION['eid']=$result->id;
-  } 
-if($status==0)
-{
-$msg="Your account is Inactive. Please contact admin";
-} else{
-$_SESSION['emplogin']=$_POST['username'];
-echo "<script type='text/javascript'> document.location = 'leavehistory.php'; </script>";
-} }
+// Code for change password 
+if(isset($_POST['change']))
+    {
+$newpassword=md5($_POST['newpassword']);
+$empid=$_SESSION['empid'];
 
-else{
-  
-  echo "<script>alert('Invalid Details');</script>";
-
-}
-
+$con="update tblemployees set Password=:newpassword where id=:empid";
+$chngpwd1 = $dbh->prepare($con);
+$chngpwd1-> bindParam(':empid', $empid, PDO::PARAM_STR);
+$chngpwd1-> bindParam(':newpassword', $newpassword, PDO::PARAM_STR);
+$chngpwd1->execute();
+$msg="Your Password succesfully changed";
 }
 
 ?><!DOCTYPE html>
@@ -40,7 +22,7 @@ else{
     <head>
         
         <!-- Title -->
-        <title>ELMS | Home Page</title>
+        <title>ELMS | Password Recovery</title>
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <meta charset="UTF-8">
@@ -57,9 +39,26 @@ else{
         <!-- Theme Styles -->
         <link href="assets/css/alpha.min.css" rel="stylesheet" type="text/css"/>
         <link href="assets/css/custom.css" rel="stylesheet" type="text/css"/>
+  <style>
+        .errorWrap {
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #dd3d36;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+.succWrap{
+    padding: 10px;
+    margin: 0 0 20px 0;
+    background: #fff;
+    border-left: 4px solid #5cb85c;
+    -webkit-box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,.1);
+}
+        </style>
         
-        
-    </head>
+    </head> 
     <body class="signin-page">
         <div class="loader-bg"></div>
         <div class="loader">
@@ -103,51 +102,95 @@ else{
             </div>
         </div>
         <div class="mn-content fixed-sidebar">
-           
+                
             <main class="mn-inner">
                 <div class="row">
                     <div class="col s10">
-                        <div class="page-title"><h4 align="center">Welcome to Employee Leave Management System</h4></div>
+                        <div class="page-title"><h4>Employee Password Recovery</h4></div>
 
                           <div class="col s12 m6 l8 offset-l2 offset-m3">
                               <div class="card white darken-1">
 
                                   <div class="card-content ">
-                                      <span class="card-title" style="font-size:20px;">Employee Login</span>
-                                         <?php if($msg){?><div class="errorWrap"><strong>Error</strong> : <?php echo htmlentities($msg); ?> </div><?php }?>
+                                       <div class="row">
+          <span class="card-title" style="font-size:20px; padding-left: 20px;">Employee Details </span>
+                                         <?php if($msg){?><div class="succWrap"><strong>Success </strong> : <?php echo htmlentities($msg); ?> </div><?php }?>
                                        <div class="row">
                                            <form class="col s12" name="signin" method="post">
                                                <div class="input-field col s12">
-                                                   <input id="username" type="text" name="username" class="validate" autocomplete="off" required >
-                                                   <label for="email">Email</label>
+                                                   <input id="empid" type="text" name="empid" class="validate" autocomplete="off" required >
+                                                   <label for="email">Employee Id</label>
                                                </div>
                                                <div class="input-field col s12">
-                                                   <input id="password" type="password" class="validate" name="password" autocomplete="off" required>
-                                                   <label for="password">Password</label>
+                                                   <input id="password" type="text" class="validate" name="emailid" autocomplete="off" required>
+                                                   <label for="password">Email Address</label>
                                                </div>
                                                <div class="col s12 right-align m-t-sm">
                                                 
-                                                   <input type="submit" name="signin" value="Sign in" class="waves-effect waves-light btn teal">
+                                                   <input type="submit" name="submit" value="Sign in" class="waves-effect waves-light btn teal">
                                                </div>
                                            </form>
-                                           <div class="col s12 center-align m-t-sm"><p>--------------------------</p></div>
-                                           <div class="col s12 center-align m-t-sm">
-                                            <a class="waves-effect waves-grey" href="forgot-password.php"><i class="material-icons"></i>Forgot Password?</a>
-                                           </div>
                                       </div>
                                   </div>
+
+<?php if(isset($_POST['submit']))
+{
+$empid=$_POST['empid'];
+$email=$_POST['emailid'];
+$sql ="SELECT id FROM tblemployees WHERE EmailId=:email and EmpId=:empid";
+$query= $dbh -> prepare($sql);
+$query-> bindParam(':email', $email, PDO::PARAM_STR);
+$query-> bindParam(':empid', $empid, PDO::PARAM_STR);
+$query-> execute();
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+if($query->rowCount() > 0)
+{
+foreach ($results as $result) {
+    $_SESSION['empid']=$result->id;
+  } 
+    ?>
+
+ <div class="row">
+          <span class="card-title" style="font-size:20px; padding-left: 20px;">Change your password </span>                                     
+    <form class="col s12" name="udatepwd" method="post">
+  <div class="input-field col s12">
+ <input id="password" type="password" name="newpassword" class="validate" autocomplete="off" required>
+                                                <label for="password">New Password</label>
+                                            </div>
+
+<div class="input-field col s12">
+<input id="password" type="password" name="confirmpassword" class="validate" autocomplete="off" required>
+ <label for="password">Confirm Password</label>
+</div>
+
+
+<div class="input-field col s12">
+<button type="submit" name="change" class="waves-effect waves-light btn indigo m-b-xs" onclick="return valid();">Change</button>
+</div>
+</div>
+</form>
+<?php } else{ ?>
+<div class="errorWrap" style="margin-left: 2%; font-size:22px;">
+ <strong>ERROR</strong> : <?php echo htmlentities("Invalid details");
+}?></div>
+<?php } ?>
+
+
+
+
+
+
                               </div>
                           </div>
-                          <div class="row">
-                                <div class="col s12 center-align">
-                                 <a class="waves-effect waves-light btn red" href="admin/">Admin Login</a>
-                                </div>
-                        </div>
+                        <div class="col s12 center-align m-t-sm">
+                        <a href="./index.php"><div class="waves-effect waves-light btn yellow" >Back to Employee Login</div></a>
+                      </div>
                     </div>
                 </div>
             </main>
             
         </div>
+        <div class="left-sidebar-hover"></div>
         
         <!-- Javascripts -->
         <script src="assets/plugins/jquery/jquery-2.2.0.min.js"></script>
