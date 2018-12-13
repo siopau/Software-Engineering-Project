@@ -7,40 +7,31 @@ if(strlen($_SESSION['alogin'])==0)
 header('location:index.php');
 }
 else{
-// code for Inactive  employee    
 if(isset($_GET['inid']))
 {
 $id=$_GET['inid'];
-$status=0;
-$sql = "update tblemployees set Status=:status  WHERE id=:id";
+$sql = "Insert into archive_leavetype select * from tblleavetype where id=:id";
 $query = $dbh->prepare($sql);
 $query -> bindParam(':id',$id, PDO::PARAM_STR);
-$query -> bindParam(':status',$status, PDO::PARAM_STR);
 $query -> execute();
-header('location:manageemployee.php');
+$msg="Leave Type moved to archive.";
 }
-
-
-
-//code for active employee
-if(isset($_GET['id']))
-{
-$id=$_GET['id'];
-$status=1;
-$sql = "update tblemployees set Status=:status  WHERE id=:id";
+if(isset($_GET['inid'])){
+$id=$_GET['inid'];
+$sql = "Delete FROM tblleavetype WHERE id=:id";
 $query = $dbh->prepare($sql);
 $query -> bindParam(':id',$id, PDO::PARAM_STR);
-$query -> bindParam(':status',$status, PDO::PARAM_STR);
 $query -> execute();
-header('location:manageemployee.php');
+$msg="Leave Type moved to archive.";
 }
- ?>
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         
         <!-- Title -->
-        <title>Admin | Manage Employees</title>
+        <title>Admin | Manage Leave Type</title>
         
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <meta charset="UTF-8">
@@ -84,29 +75,27 @@ header('location:manageemployee.php');
             <main class="mn-inner">
                 <div class="row">
                     <div class="col s12">
-                        <div class="page-title">Manage Employes</div>
+                        <div class="page-title">Manage Leave Type</div>
                     </div>
                    
                     <div class="col s12 m12 l12">
                         <div class="card">
                             <div class="card-content">
-                                <span class="card-title">Employees Info</span>
+                                <span class="card-title">Leave Type Info</span>
                                 <?php if($msg){?><div class="succWrap"><strong>SUCCESS</strong> : <?php echo htmlentities($msg); ?> </div><?php }?>
                                 <table id="example" class="display responsive-table ">
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Employee Id</th>
-                                            <th>Full Name</th>
-                                            <th>Department</th>
-                                             <th>Status</th>
-                                             <th>Registration Date</th>
+                                            <th>Leave Type</th>
+                                            <th>Description</th>
+                                            <th>Creation Date</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                  
                                     <tbody>
-<?php $sql = "SELECT EmpId,FirstName,LastName,Department,Status,RegDate,id from  tblemployees";
+<?php $sql = "SELECT * from tblleavetype";
 $query = $dbh -> prepare($sql);
 $query->execute();
 $results=$query->fetchAll(PDO::FETCH_OBJ);
@@ -117,28 +106,11 @@ foreach($results as $result)
 {               ?>  
                                         <tr>
                                             <td> <?php echo htmlentities($cnt);?></td>
-                                            <td><?php echo htmlentities($result->EmpId);?></td>
-                                            <td><?php echo htmlentities($result->FirstName);?>&nbsp;<?php echo htmlentities($result->LastName);?></td>
-                                            <td><?php echo htmlentities($result->Department);?></td>
-                                             <td><?php $stats=$result->Status;
-if($stats){
-                                             ?>
-                                                 <a class="waves-effect waves-green btn-flat m-b-xs">Active</a>
-                                                 <?php } else { ?>
-                                                 <a class="waves-effect waves-red btn-flat m-b-xs">Inactive</a>
-                                                 <?php } ?>
-
-
-                                             </td>
-                                              <td><?php echo htmlentities($result->RegDate);?></td>
-                                            <td><a class ="waves-effect waves-blue btn-flat" href="editemployee.php?empid=<?php echo htmlentities($result->id);?>">Edit</a>
-                                        <?php if($result->Status==1)
- {?>
-<a class="waves-effect waves-black btn-flat" href="manageemployee.php?inid=<?php echo htmlentities($result->id);?>" onclick="return confirm('Are you sure you want to INACTIVATE this employee?');"" > Inactivate
-<?php } else {?>
-
-                                            <a href="manageemployee.php?id=<?php echo htmlentities($result->id);?>" onclick="return confirm('Are you sure you want to ACTIVATE this employee?');"" class="waves-effect waves-orange btn-flat"> Activate
-                                            <?php } ?> </td>
+                                            <td><?php echo htmlentities($result->LeaveType);?></td>
+                                            <td><?php echo htmlentities($result->Description);?></td>
+                                            <td><?php echo htmlentities($result->CreationDate);?></td>
+                                            <td><a href="editleavetype.php?lid=<?php echo htmlentities($result->id);?>"><i class="material-icons">mode_edit</i></a>
+                                            <a href="manageleavetype.php?inid=<?php echo htmlentities($result->id);?>" onclick="return confirm('Do you want to move it to archive?');"> Move to Archive</a> </td>
                                         </tr>
                                          <?php $cnt++;} }?>
                                     </tbody>
